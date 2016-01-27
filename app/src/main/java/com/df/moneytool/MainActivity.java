@@ -3,6 +3,7 @@ package com.df.moneytool;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
@@ -33,15 +34,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         startServiceBtn = (Button) findViewById(R.id.button_accessible);
 
-        handleMIUIStatusBar();
-       // updateServiceStatus();
-        explicitlyLoadPreferences();
-
+        // handleMIUIStatusBar();
+        // updateServiceStatus();
     }
 
-    private void explicitlyLoadPreferences() {
-        // PreferenceManager.setDefaultValues(this, R.xml.pref_headers, false);
-    }
 
     /**
      * 适配MIUI沉浸状态栏
@@ -101,8 +97,10 @@ public class MainActivity extends AppCompatActivity {
         startActivity(mAccessibleIntent);
     }
 
-    public void openGithub(View view) {
 
+    public void openGithub(View view) {
+        Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.github_url)));
+        startActivity(i);
     }
 
     public void openSettings(View view) {
