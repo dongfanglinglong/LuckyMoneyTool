@@ -30,6 +30,9 @@ public class MoneyToolService extends AccessibilityService {
     private static final String WECHAT_VIEW_SELF_CH = "查看红包";
     private static final String WECHAT_VIEW_OTHERS_CH = "领取红包";
 
+    // 打开红包
+    private static final String WECHAT_VIEW_GET = "拆红包";
+
     // 关闭红包页面
     private static final String WECHAT_DETAILS_EN = "Details";
     private static final String WECHAT_DETAILS_CH = "红包详情";
@@ -100,10 +103,11 @@ public class MoneyToolService extends AccessibilityService {
                 if (parcelable instanceof Notification) {
                     Notification notification = (Notification) parcelable;
                     try {
-                        if (luckyMoneyStatus > 0) {
-                            luckyMoneyNum++;
-                        }
-                        else if (Gloable.MONITOR_NOTIFICATION) {
+                        //   if (luckyMoneyStatus > 0) {
+                        //       luckyMoneyNum++;
+                        //   }
+                        //   else
+                        if (Gloable.MONITOR_NOTIFICATION) {
                             notification.contentIntent.send();
                             luckyMoneyStatus |= LUCKYMONEY_NOTIFICATION;
                             scolledViewItemCount = -1;
@@ -148,13 +152,13 @@ public class MoneyToolService extends AccessibilityService {
                 getLuckyMoney();
             }
 
-            if (LUCKYMONEY_CLOSE == luckyMoneyStatus) {
-                if (luckyMoneyNum > 0) {
-                    ULog.e("findLuckMoneyAndOpen again luckyMoneyNum = " + luckyMoneyNum);
-                    findLuckMoneyAndOpen();
-                    luckyMoneyNum = luckyMoneyNum > 0 ? luckyMoneyNum-- : 0;
-                }
-            }
+            //  if (LUCKYMONEY_CLOSE == luckyMoneyStatus) {
+            //      if (luckyMoneyNum > 0) {
+            //          ULog.e("findLuckMoneyAndOpen again luckyMoneyNum = " + luckyMoneyNum);
+            //          findLuckMoneyAndOpen();
+            //          luckyMoneyNum = luckyMoneyNum > 0 ? luckyMoneyNum-- : 0;
+            //      }
+            //  }
         }
         break;
         }
@@ -168,13 +172,18 @@ public class MoneyToolService extends AccessibilityService {
         ULog.d("index = " + index + ",rootNodeInfo.getChildCount() = " + luckyMoneyListView.getChildCount());
 
         if (null != luckyMoneyListView.getChild(index)) {
-            List<AccessibilityNodeInfo> list = findAccessibilityNodeInfosByTexts(
-                    luckyMoneyListView.getChild(index),
-                    new String[]{
-                            WECHAT_VIEW_OTHERS_CH,
-                            WECHAT_VIEW_SELF_CH
-                    }
-            );
+            List<AccessibilityNodeInfo> list = luckyMoneyListView.getChild(index)
+                    .findAccessibilityNodeInfosByViewId("com.tencent.mm:id/e4");
+
+            if (list == null | list.isEmpty()) {
+                list = findAccessibilityNodeInfosByTexts(
+                        luckyMoneyListView.getChild(index),
+                        new String[]{
+                                WECHAT_VIEW_OTHERS_CH,
+                                WECHAT_VIEW_SELF_CH
+                        }
+                );
+            }
 
             ULog.d("!list.isEmpty() " + !list.isEmpty());
 
@@ -199,6 +208,7 @@ public class MoneyToolService extends AccessibilityService {
     }
 
     /** 多个红包是需要触发 */
+    @Deprecated
     private boolean findLuckMoneyAndOpen() {
         List<AccessibilityNodeInfo> l = rootNodeInfo.findAccessibilityNodeInfosByViewId("com.tencent.mm:id/ny");
         if (null != l && !l.isEmpty()) {
@@ -248,9 +258,9 @@ public class MoneyToolService extends AccessibilityService {
     /** 抢红包 ,如果红包已经抢完，则关闭红包 */
     private void getLuckyMoney() {
         /* 戳开红包，红包还没抢完，遍历节点匹配“拆红包” */
-        List<AccessibilityNodeInfo> list = rootNodeInfo.findAccessibilityNodeInfosByViewId("com.tencent.mm:id/b2c");
+        List<AccessibilityNodeInfo> list = rootNodeInfo.findAccessibilityNodeInfosByViewId("com.tencent.mm:id/b43");
         if (null == list || list.isEmpty()) {
-            list = rootNodeInfo.findAccessibilityNodeInfosByText("拆红包");
+            list = rootNodeInfo.findAccessibilityNodeInfosByText(WECHAT_VIEW_GET);
         }
 
         if (null != list && !list.isEmpty()) {
@@ -321,6 +331,7 @@ public class MoneyToolService extends AccessibilityService {
         info.getBoundsInParent(rect);
         ULog.d(rect.toString());
 
+//        return 168 == rect.right && 49 == rect.bottom;
         return 212 == rect.right && 66 == rect.bottom;
 
     }
