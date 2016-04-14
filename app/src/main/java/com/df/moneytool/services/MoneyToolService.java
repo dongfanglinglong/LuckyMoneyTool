@@ -171,7 +171,7 @@ public class MoneyToolService extends AccessibilityService {
         int index = luckyMoneyListView.getChildCount() > 0 ? luckyMoneyListView.getChildCount() - 1 : 0;
         ULog.d("index = " + index + ",rootNodeInfo.getChildCount() = " + luckyMoneyListView.getChildCount());
 
-        if (null != luckyMoneyListView.getChild(index)) {
+        if (luckyMoneyListView.getChildCount() > 0 && null != luckyMoneyListView.getChild(index)) {
             List<AccessibilityNodeInfo> list = luckyMoneyListView.getChild(index)
                     .findAccessibilityNodeInfosByViewId("com.tencent.mm:id/e4");
 
@@ -258,7 +258,7 @@ public class MoneyToolService extends AccessibilityService {
     /** 抢红包 ,如果红包已经抢完，则关闭红包 */
     private void getLuckyMoney() {
         /* 戳开红包，红包还没抢完，遍历节点匹配“拆红包” */
-        List<AccessibilityNodeInfo> list = rootNodeInfo.findAccessibilityNodeInfosByViewId("com.tencent.mm:id/b43");
+        List<AccessibilityNodeInfo> list = rootNodeInfo.findAccessibilityNodeInfosByViewId("com.tencent.mm:id/b3h");
         if (null == list || list.isEmpty()) {
             list = rootNodeInfo.findAccessibilityNodeInfosByText(WECHAT_VIEW_GET);
         }
