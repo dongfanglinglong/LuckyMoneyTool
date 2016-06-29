@@ -1,0 +1,500 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'net.lingala.zip4j:zip4j:1.3.2'
+    }
+}
+
+import groovy.transform.Field
+import net.lingala.zip4j.core.ZipFile
+import net.lingala.zip4j.model.ZipParameters
+import net.lingala.zip4j.util.Zip4jConstants
+
+/* ----------------------------------------------- 参数 start ---------------------------------------------------*/
+/** 编译时传入的参数，表示版本信息文件的路径。 */
+@Field private final String PROPERTY_VERSION_FILE = 'verFile'
+/** 编译时传入的参数，表示输出目录。 */
+@Field private final String PROPERTY_OUTPUT_PATH = 'outputs'
+/** 编译时传入的参数，表示是否要修改生成物的名称。 */
+@Field private final String PROPERTY_CHANGE_OUTPUT_FILE_NAME = 'changeOutputName'
+/** 编译时传入的参数，表示项目名称，建议写在子项目的 gradle.properties 文件中。 */
+@Field private final String PROPERTY_PROJECT_NAME = 'proName'
+/** 编译时传入的参数，表示渠道信息文件。 */
+@Field private final String PROPERTY_CHANNEL_NAME = 'channelFile'
+/* ----------------------------------------------- 参数 end ---------------------------------------------------*/
+
+/* ----------------------------------------------- 公共方法区 start ---------------------------------------------------*/
+/** 分隔符。 */
+@Field private final String SEPARATOR = '-'
+
+/** 项目类型，application 。 */
+@Field private final int PROJECT_TYPE_APPLICATION = 0
+/** 项目类型，library 。 */
+@Field private final int PROJECT_TYPE_LIBRARY = 1
+/** 项目类型，其他 。 */
+@Field private final int PROJECT_TYPE_OTHER = 2
+/**
+ * 项目类型。
+ * <ul>
+ *     <li>{@link #PROJECT_TYPE_APPLICATION}：application</li>
+ *     <li>{@link #PROJECT_TYPE_LIBRARY}：library</li>
+ *     <li>{@link #PROJECT_TYPE_OTHER}：其他</li>
+ * </ul>
+ */
+@Field int projectType
+
+/**
+ * 判断当前项目类型。
+ * <ul>
+ *     <li>{@link #PROJECT_TYPE_APPLICATION}：application</li>
+ *     <li>{@link #PROJECT_TYPE_LIBRARY}：library</li>
+ *     <li>{@link #PROJECT_TYPE_OTHER}：其他</li>
+ * </ul>
+ */
+int checkProjectType() {
+    // 判断当前项目的项目类型。
+    if (project.plugins.hasPlugin("com.android.application")) {
+        return PROJECT_TYPE_APPLICATION
+    } else {
+        if (project.plugins.hasPlugin("com.android.library")) {
+            return PROJECT_TYPE_LIBRARY
+        } else {
+            return PROJECT_TYPE_OTHER
+        }
+    }
+}
+
+/** 获取项目名称。 */
+String getProjectName() {
+    if (project.properties[PROPERTY_PROJECT_NAME]) {
+        return project.properties[PROPERTY_PROJECT_NAME]
+    }
+
+    return project.name
+}
+
+/** 获取文件扩展名。 */
+String getExtensionName(String fileName) {
+    return getExtensionName(fileName, fileName);
+}
+
+/** 获取文件扩展名。 */
+String getExtensionName(String fileName, String defaultName) {
+    if (fileName) {
+        int dot = fileName.lastIndexOf('.');
+        if (dot > -1 && dot < fileName.length() - 1) {
+            return fileName.substring(dot + 1);
+        }
+    }
+    return defaultName;
+}
+
+/**
+ * 创建 variant 生成物存放的主目录。
+ * @param outputs 根目录。
+ * @param variant
+ * @return
+ */
+File createVariantFolder(String outputs, variant) {
+    StringBuilder sb = new StringBuilder()
+    // 输出目录。
+    sb.append(outputs)
+    sb.append(File.separatorChar)
+
+    // 当前项目对应的目录。
+    sb.append(getProjectName())
+    sb.append(File.separatorChar)
+
+    // 当前版本号对应的目录。
+    sb.append(new Date().format('yyyyMMdd'))
+    sb.append(SEPARATOR)
+    sb.append(variant.mergedFlavor.versionName)
+    sb.append(SEPARATOR)
+    sb.append(variant.mergedFlavor.versionCode)
+    sb.append(File.separatorChar)
+
+    // 当前 variants 对应的目录。
+    // productFlavors 。
+    variant.getProductFlavors().each {
+        sb.append(it.name)
+        sb.append(SEPARATOR)
+    }
+    // buildType 。
+    sb.append(variant.buildType.name)
+    sb.append(File.separatorChar)
+
+    File variantOutFolder = new File(sb.toString())
+    if (!variantOutFolder.exists()) {
+        variantOutFolder.mkdirs()
+    }
+    return variantOutFolder
+}
+/* ----------------------------------------------- 公共方法区 end -----------------------------------------------------*/
+
+/* -------------------------------------------- 版本控制 start ---------------------------------------------------*/
+/** 标记是否开启修改版本号的功能。 */
+boolean isChangeVersion = false
+/** 版本信息文件路径。*/
+String verFile
+/** 版本信息。 */
+Version versionInfo
+
+if (project.properties[PROPERTY_VERSION_FILE]) {
+    verFile = project.properties[PROPERTY_VERSION_FILE]
+} else {
+    if (System.properties[PROPERTY_VERSION_FILE]) {
+        verFile = System.properties[PROPERTY_VERSION_FILE]
+    }
+}
+
+println "---------------- verFile[" + verFile + "]"
+if (verFile) {
+    isChangeVersion = true
+}
+
+/** 从版本文件中获取版本信息。 */
+Version getVersionFromFile(String verFilePath) {
+    Version version = new Version()
+    // 获取版本号。
+    def pFile = new File(verFilePath)
+    if (pFile.exists()) {
+        def versionProps = new Properties()
+        def read = pFile.newReader();
+        versionProps.load(read)
+        read.close()
+        version.hVerName = versionProps['hVerName'] ?: Version.DEFAULT_H_VER_NAME
+        version.lVerName = versionProps['lVerName'] ?: Version.DEFAULT_L_VER_NAME
+        version.verCode = versionProps['verCode'] ? versionProps['verCode'].toInteger() : Version.DEFAULT_VERSION_CODE
+    } else {
+        version.hVerName = Version.DEFAULT_H_VER_NAME
+        version.lVerName = Version.DEFAULT_L_VER_NAME
+        version.verCode = Version.DEFAULT_VERSION_CODE
+    }
+    return version
+}
+
+/** 修改生成物的版本信息。 */
+def changeVersion(Version version, android) {
+    Closure closure = { variant ->
+        // 修改 apk 版本号。
+        variant.mergedFlavor.versionCode = version.verCode
+        // 修改 apk 版本名称。
+        variant.mergedFlavor.versionName = variant.buildType.isDebuggable() ? "${version.hVerName}.${version.lVerName}" : "$version.hVerName"
+    }
+
+    if (projectType == PROJECT_TYPE_APPLICATION) {
+        android.applicationVariants.all(closure)
+    } else {
+        if (projectType == PROJECT_TYPE_LIBRARY) {
+            android.libraryVariants.all(closure)
+        }
+    }
+}
+
+/** 将版本信息存储到版本文件。 */
+def saveVersionToFile(Version version, String verFilePath) {
+    println("last version[" + version.hVerName + "." + version.lVerName + "][" + version.verCode + "],path[" + verFilePath + "]")
+
+    // 升级版本号。
+    def versionProps = new Properties()
+    versionProps['hVerName'] = version.hVerName
+    versionProps['lVerName'] = String.valueOf(version.lVerName.toInteger() + 1)
+    versionProps['verCode'] = String.valueOf(version.verCode + 1)
+
+    // 保存版本号。
+    def pFile = new File(verFilePath)
+    def writer = pFile.newWriter();
+    versionProps.store(writer, null)
+    writer.close()
+    println("preview version[" + versionProps.hVerName + "." + versionProps.lVerName + "][" + versionProps.verCode + "],path[" + verFilePath + "]")
+}
+
+class Version {
+    /** 默认的版本名称高位。 */
+    public static final String DEFAULT_H_VER_NAME = '1.0.0'
+    /** 默认的版本名称低位。 */
+    public static final String DEFAULT_L_VER_NAME = '1'
+    /** 默认版本号。 */
+    public static final int DEFAULT_VERSION_CODE = 1
+
+    /** 版本名称高位。 */
+    String hVerName
+    /** 版本名称高位。 */
+    String lVerName
+    /** 版本号。 */
+    int verCode
+}
+/* -------------------------------------------- 版本控制 end -----------------------------------------------------*/
+
+/* -------------------------------------------- 修改生成物名称 start -----------------------------------------------------*/
+/** 标记是否开启更改生成物名称的功能。 */
+boolean isChangeFileName = false
+
+if (project.hasProperty(PROPERTY_CHANGE_OUTPUT_FILE_NAME) || System.hasProperty(PROPERTY_CHANGE_OUTPUT_FILE_NAME)) {
+    isChangeFileName = true
+}
+
+/** 修改生成物的名称。 */
+def changeOutputFileName(android) {
+    Closure closure = { variant ->
+        StringBuilder sb = new StringBuilder()
+        // 项目名称。
+        sb.append(getProjectName())
+        // productFlavors 。
+        variant.getProductFlavors().each {
+            sb.append(SEPARATOR)
+            sb.append(it.name)
+        }
+        // buildType 。
+        sb.append(SEPARATOR)
+        sb.append(variant.buildType.name)
+        // 版本名称。
+        sb.append(SEPARATOR)
+        sb.append(variant.mergedFlavor.versionName)
+        // 版本号。
+        sb.append(SEPARATOR)
+        sb.append(variant.mergedFlavor.versionCode)
+        // 标记 apk 是否进行了签名。
+        if (projectType == PROJECT_TYPE_APPLICATION) {
+            if (!variant.isSigningReady()) {
+                sb.append(SEPARATOR)
+                sb.append('unsigned')
+            }
+        }
+
+        def output = variant.outputs[0];
+
+        // 后缀名。
+        sb.append('.')
+        sb.append(getExtensionName(output.outputFile.name))
+
+        // 更改生成物的名称。
+        output.outputFile = new File(output.outputFile.parent, sb.toString())
+    }
+    if (projectType == PROJECT_TYPE_APPLICATION) {
+        android.applicationVariants.all(closure)
+    } else {
+        if (projectType == PROJECT_TYPE_LIBRARY) {
+            android.libraryVariants.all(closure)
+        }
+    }
+}
+/* -------------------------------------------- 修改生成物名称 end -----------------------------------------------------*/
+
+/* -------------------------------------------- 生成物收集 start -----------------------------------------------------*/
+/** 标记是否开启收集生成物的功能。 */
+boolean isCollect = false
+/** 项目生成文件存放的的目录。*/
+String outputs
+
+if (project.properties[PROPERTY_OUTPUT_PATH]) {
+    outputs = project.properties[PROPERTY_OUTPUT_PATH]
+} else {
+    if (System.properties[PROPERTY_OUTPUT_PATH]) {
+        outputs = System.properties[PROPERTY_OUTPUT_PATH]
+    }
+}
+if (outputs) {
+    isCollect = true
+}
+
+/** 收集有用的生成物。 */
+def collectOutputFiles(String outputs, android) {
+    Closure closure = { variant ->
+        File variantOutFolder = createVariantFolder(outputs, variant)
+
+        // 复制目标文件。
+        copy {
+            from(variant.outputs[0].outputFile)
+            into(new File(variantOutFolder, getExtensionName(variant.outputs[0].outputFile.name, 'output')))
+        }
+
+        // 复制 AndroidManifest.xml 文件。
+        copy {
+            from(variant.outputs[0].getProcessManifest().manifestOutputFile)
+            into(new File(variantOutFolder, 'manifest'))
+        }
+
+        // 有 proguard 信息文件，说明进行了 proguard 操作，需要收集 mapping 、jar 、dex 文件。
+        if (variant.mappingFile) {
+            // 复制 proguard 信息文件。
+            copy {
+                from(variant.variantData.scope.getProguardOutputFolder())
+                into(new File(variantOutFolder, 'mapping'))
+            }
+
+            // 复制 proguard 输出文件。
+            copy {
+                from(variant.variantData.scope.getProguardOutputFile())
+                into(new File(variantOutFolder, 'jar'))
+            }
+
+            // 复制 dex 文件。
+            if (projectType == PROJECT_TYPE_APPLICATION) {
+                // copy {
+                //     from(variant.dex.outputFolder)
+                //     into(new File(variantOutFolder, 'dex'))
+                // }
+            }
+        }
+    }
+
+    if (projectType == PROJECT_TYPE_APPLICATION) {
+        android.applicationVariants.all(closure)
+    } else {
+        if (projectType == PROJECT_TYPE_LIBRARY) {
+            android.libraryVariants.all(closure)
+        }
+    }
+}
+/* -------------------------------------------- 生成物收集 end -----------------------------------------------------*/
+
+/* -------------------------------------------- 渠道包 start -----------------------------------------------------*/
+/**
+ * 渠道文件名称与渠道号分隔符。前面的是渠道文件名称，后面的是渠道号。
+ * 渠道文件名称即 {@code META-INF/} 目录下渠道文件的名称。
+ */
+@Field public static final String SPLIT_CHARACTER = "-";
+/** apk 文件中的 {@code META-INF} 文件夹的名称。 */
+@Field public static final String META_INF = "META-INF/";
+
+/** 渠道信息文件路径。 */
+String channelFilePath
+
+if (project.properties[PROPERTY_CHANNEL_NAME]) {
+    channelFilePath = project.properties[PROPERTY_CHANNEL_NAME]
+} else {
+    if (System.properties[PROPERTY_CHANNEL_NAME]) {
+        channelFilePath = System.properties[PROPERTY_CHANNEL_NAME]
+    }
+}
+
+def buildChannel(String outputs, String channelFilePath, android) {
+    if (projectType == PROJECT_TYPE_APPLICATION) {
+        List<Channel> list = getChannelList(new File(channelFilePath))
+        if (!list) {
+            return
+        }
+
+        android.applicationVariants.all { variant ->
+            File channelOutputFolder = new File(createVariantFolder(outputs, variant), 'channel')
+            if (!channelOutputFolder.exists()) {
+                channelOutputFolder.mkdirs()
+            }
+            File apkFile = variant.outputs[0].outputFile
+            int index = apkFile.name.lastIndexOf('.')
+            String startStr = apkFile.name.substring(0, index)
+            String endStr = apkFile.name.substring(index, apkFile.name.length())
+
+            // 将源 apk 文件读入内存当做缓存。
+            def apkBytes = apkFile.readBytes()
+
+            list.each { channel ->
+                // 将内存缓存文件写到磁盘中。
+                File channelApkFile = new File(channelOutputFolder, "$startStr$SEPARATOR$channel.appendStr$endStr")
+                channelApkFile.withOutputStream {
+                    it.write apkBytes
+                }
+
+                File temp = new File(outputs, channel.fileName)
+                temp.createNewFile()
+                // 将渠道文件写入到新创建的 apk 文件中。
+                def zipFile = new ZipFile(channelApkFile)
+                def parameters = new ZipParameters()
+                parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE)
+                parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_NORMAL)
+                parameters.setRootFolderInZip(META_INF)
+                // 由于 zip4j 的 ZipParameters#setFileNameInZip(String) 方法不起作用，所以无限创建以渠道文件名称为名称的空文件加入 zip 。
+                parameters.setFileNameInZip(channel.fileName)
+                zipFile.addFile(temp, parameters)
+                temp.delete()
+            }
+        }
+    }
+}
+
+/**
+ * 从渠道列表文件中获取渠道列表。
+ * 关于渠道列表文件的每一行内容，有以下准则：
+ * <ol>
+ * <li>一行只有一个渠道号。</li>
+ * <li>每一行均需要含有 {@link #SPLIT_CHARACTER} 字符。</li>
+ * <li>{@link #SPLIT_CHARACTER} 字符前的内容为写入 {@link #META_INF} 中的渠道文件的名称，字符后的内容为 apk 文件名称追加的内容。</li>
+ * <li>以 # 开头的行将会被忽略。</li>
+ * </ol>
+ * 例如，在这么一个渠道列表文件中：
+ * <pre>
+ *     channel_channel1-channel1
+ *     #channel_channel2-channel2
+ * </pre>
+ * 第一行为有效的数据，第二行会被自动忽略。
+ *
+ * @param file
+ *         渠道列表文件。
+ *
+ * @return 渠道列表。
+ */
+List<Channel> getChannelList(File file) {
+    ArrayList<Channel> list = new ArrayList<>();
+
+    file.eachLine { line ->
+        if (line.startsWith("#")) {
+            return
+        }
+        int index = line.indexOf(SPLIT_CHARACTER);
+        if (index <= 0 || index >= line.length()) {
+            return
+        }
+        String[] split = line.split(SPLIT_CHARACTER)
+        list.add(new Channel(fileName: split[0],
+                appendStr: split[1]))
+    }
+    return list
+}
+
+/** 渠道信息。 */
+class Channel {
+    /** apk 文件名称追加的内容。 */
+    String appendStr
+    /** 写入 {@link #META_INF} 中的渠道文件的名称 */
+    String fileName
+}
+/* -------------------------------------------- 渠道包 end -----------------------------------------------------*/
+
+/* -------------------------------------------- Task start -----------------------------------------------------*/
+projectType = checkProjectType()
+
+preBuild {
+    doFirst {
+        if (isChangeVersion) {
+            changeVersion(versionInfo = getVersionFromFile(verFile), android)
+        }
+
+        if (isChangeFileName) {
+            changeOutputFileName(android)
+        }
+    }
+}
+
+assemble {
+    println "---------------- assemble "
+
+    doLast {
+        println "---------------- assemble doLast "
+        if (isCollect) {
+            collectOutputFiles(outputs, android)
+
+            // if (channelFilePath) {
+            //     buildChannel(outputs, channelFilePath, android)
+            // }
+        }
+
+        if (isChangeVersion) {
+            saveVersionToFile(versionInfo, verFile)
+        }
+    }
+}
+/* -------------------------------------------- Task end -----------------------------------------------------*/
