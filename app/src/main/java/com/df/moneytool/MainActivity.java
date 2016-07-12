@@ -3,6 +3,8 @@ package com.df.moneytool;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -13,6 +15,7 @@ import android.view.accessibility.AccessibilityManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.df.moneytool.utils.ULog;
 
@@ -26,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private Button startServiceBtn;
+    private TextView mVersion;
 
 
     @Override
@@ -34,10 +38,23 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         startServiceBtn = (Button) findViewById(R.id.button_accessible);
 
+        mVersion = (TextView) findViewById(R.id.tv_version);
+        mVersion.setText("V " + getAppVersion(this));
+
         // handleMIUIStatusBar();
         // updateServiceStatus();
     }
 
+    /** 客户端版本 */
+    private String getAppVersion(Context context) {
+        try {
+            PackageInfo pi = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            return pi.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+            return "unknown";
+        }
+    }
 
     /**
      * 适配MIUI沉浸状态栏
@@ -59,8 +76,7 @@ public class MainActivity extends AppCompatActivity {
             ImageView placeholder = (ImageView) findViewById(R.id.main_actiob_bar_placeholder);
             int placeholderHeight = getStatusBarHeight();
             placeholder.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, placeholderHeight));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             // Do nothing
         }
     }

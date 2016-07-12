@@ -22,23 +22,6 @@ import java.util.List;
  */
 public class MoneyToolService extends AccessibilityService {
 
-    // ---------- 红包涉及关键字 --------------
-    // 出现红包
-    private final static String WECHAT_NOTIFICATION_TIP = "[微信红包]";
-
-    // 领取红包
-    private static final String WECHAT_VIEW_SELF_CH = "查看红包";
-    private static final String WECHAT_VIEW_OTHERS_CH = "领取红包";
-
-    // 打开红包
-    private static final String WECHAT_VIEW_GET = "拆红包";
-
-    // 关闭红包页面
-    private static final String WECHAT_DETAILS_EN = "Details";
-    private static final String WECHAT_DETAILS_CH = "红包详情";
-    private static final String WECHAT_BETTER_LUCK_EN = "Better luck next time!";
-    private static final String WECHAT_BETTER_LUCK_CH = "手慢了";
-
 
     // ---------- 抢红包操作状态 --------------
     /** 通知栏收到红包 */
@@ -85,7 +68,8 @@ public class MoneyToolService extends AccessibilityService {
     }
 
     private void processAccessibilityEvent(AccessibilityEvent event) {
-        if (AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED != event.getEventType() && null == (rootNodeInfo = event.getSource())) {
+        if (AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED != event.getEventType()
+                && null == (rootNodeInfo = event.getSource())) {
             ULog.e("null == (rootNodeInfo = event.getSource())");
             return;
         }
@@ -93,94 +77,94 @@ public class MoneyToolService extends AccessibilityService {
         ULog.d("luckyMoneyStatus = " + Integer.toHexString(luckyMoneyStatus) + ",luckyMoneyNum = " + luckyMoneyNum);
 
         switch (event.getEventType()) {
-        case AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED:
-            ULog.i("----------------TYPE_NOTIFICATION_STATE_CHANGED-------------");
-            // if (!Gloable.MONITOR_NOTIFICATION)
-            //     return;
+            // 通知栏消息判断
+            case AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED:
+                ULog.i("----------------TYPE_NOTIFICATION_STATE_CHANGED-------------");
+                if (!Gloable.MONITOR_NOTIFICATION)
+                    return;
 
-            if (event.getText().toString().contains(WECHAT_NOTIFICATION_TIP)) {
-                Parcelable parcelable = event.getParcelableData();
-                if (parcelable instanceof Notification) {
-                    Notification notification = (Notification) parcelable;
-                    try {
-                        //   if (luckyMoneyStatus > 0) {
-                        //       luckyMoneyNum++;
-                        //   }
-                        //   else
-                        if (Gloable.MONITOR_NOTIFICATION) {
-                            notification.contentIntent.send();
-                            luckyMoneyStatus |= LUCKYMONEY_NOTIFICATION;
-                            scolledViewItemCount = -1;
+                ULog.e(event.getText().toString());
+                if (event.getText().toString().contains(Const.WECHAT_NOTIFICATION_TIP)) {
+                    Parcelable parcelable = event.getParcelableData();
+                    if (parcelable instanceof Notification) {
+                        Notification notification = (Notification) parcelable;
+                        try {
+                            //   if (luckyMoneyStatus > 0) {
+                            //       luckyMoneyNum++;
+                            //   }
+                            //   else
+                            if (Gloable.MONITOR_NOTIFICATION) {
+                                notification.contentIntent.send();
+                                luckyMoneyStatus |= LUCKYMONEY_NOTIFICATION;
+                                scolledViewItemCount = -1;
+                            }
+                        } catch (PendingIntent.CanceledException e) {
+                            e.printStackTrace();
                         }
                     }
-                    catch (PendingIntent.CanceledException e) {
-                        e.printStackTrace();
-                    }
+                }
+                break;
+            // listview滑动事件
+            case AccessibilityEvent.TYPE_VIEW_SCROLLED: {
+                if (!Gloable.MONITOR_SCROLLED) return;
+
+                if (event.getItemCount() != scolledViewItemCount) {
+                    scolledViewItemCount = event.getItemCount();
+                    luckyMoneyListView = rootNodeInfo;
+                    ULog.e(luckyMoneyListView.toString());
+                    chkLuckyMoneyAndOpenOnce();
                 }
             }
             break;
-        case AccessibilityEvent.TYPE_VIEW_SCROLLED: {
-            if (!Gloable.MONITOR_SCROLLED) return;
-
-            if (event.getItemCount() != scolledViewItemCount) {
-                scolledViewItemCount = event.getItemCount();
-                luckyMoneyListView = rootNodeInfo;
-                ULog.e(luckyMoneyListView.toString());
-                chkLuckyMoneyAndOpenOnce();
-            }
-
-        }
-        break;
-        case AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED: {
-            // 由于LuckyMoneyStatus的影响，置为初始状态得放开监听
-            String className = event.getClassName().toString();
-            ULog.d("className = " + className);
-            if ("com.tencent.mm.ui.LauncherUI".equals(className)) {
-                luckyMoneyStatus = LUCKYMONEY_CLOSE;
-            }
-
-            if (!Gloable.MONITOR_OPEN_LUCKYMONEY) return;
-
-            if ("com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyDetailUI".equals(className)) {
-                // 抢到红包的详情页
-                if (LUCKYMONEY_OPEN == (LUCKYMONEY_OPEN & luckyMoneyStatus)) {
-                    performGlobalAction(GLOBAL_ACTION_BACK);
+            // activity切换或对话框出现
+            case AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED: {
+                // 由于LuckyMoneyStatus的影响，置为初始状态得放开监听
+                String className = event.getClassName().toString();
+                ULog.d("className = " + className);
+                if (Const.LUCKY_MONEY_LAUNCHER_ACTIVITY.equals(className)) {
+                    luckyMoneyStatus = LUCKYMONEY_CLOSE;
                 }
-                luckyMoneyStatus = LUCKYMONEY_CLOSE;
-            }
-            else if ("com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyReceiveUI".equals(className)) {
-                getLuckyMoney();
-            }
 
-            //  if (LUCKYMONEY_CLOSE == luckyMoneyStatus) {
-            //      if (luckyMoneyNum > 0) {
-            //          ULog.e("findLuckMoneyAndOpen again luckyMoneyNum = " + luckyMoneyNum);
-            //          findLuckMoneyAndOpen();
-            //          luckyMoneyNum = luckyMoneyNum > 0 ? luckyMoneyNum-- : 0;
-            //      }
-            //  }
-        }
-        break;
+                if (!Gloable.MONITOR_OPEN_LUCKYMONEY) return;
+
+                if (Const.LUCKY_MONEY_DETAIL_ACTIVITY.equals(className)) {
+                    // 抢到红包的详情页
+                    if (LUCKYMONEY_OPEN == (LUCKYMONEY_OPEN & luckyMoneyStatus)) {
+                        performGlobalAction(GLOBAL_ACTION_BACK);
+                    }
+                    luckyMoneyStatus = LUCKYMONEY_CLOSE;
+                } else if (Const.LUCKY_MONEY_RECEIVE_ACTIVITY.equals(className)) {
+                    getLuckyMoney();
+                }
+
+                //  if (LUCKYMONEY_CLOSE == luckyMoneyStatus) {
+                //      if (luckyMoneyNum > 0) {
+                //          ULog.e("findLuckMoneyAndOpen again luckyMoneyNum = " + luckyMoneyNum);
+                //          findLuckMoneyAndOpen();
+                //          luckyMoneyNum = luckyMoneyNum > 0 ? luckyMoneyNum-- : 0;
+                //      }
+                //  }
+            }
+            break;
         }
     }
 
     /** 检测是否有红包进入列表,如果有则打开红包 */
     private boolean chkLuckyMoneyAndOpenOnce() {
-        if (null == luckyMoneyListView)
-            return false;
+        if (null == luckyMoneyListView) return false;
         int index = luckyMoneyListView.getChildCount() > 0 ? luckyMoneyListView.getChildCount() - 1 : 0;
         ULog.d("index = " + index + ",rootNodeInfo.getChildCount() = " + luckyMoneyListView.getChildCount());
 
         if (luckyMoneyListView.getChildCount() > 0 && null != luckyMoneyListView.getChild(index)) {
             List<AccessibilityNodeInfo> list = luckyMoneyListView.getChild(index)
-                    .findAccessibilityNodeInfosByViewId("com.tencent.mm:id/e4");
+                    .findAccessibilityNodeInfosByViewId(Const.VIEW_OPEN_LUCKYMONEY_ITEM_ID);
 
-            if (list == null | list.isEmpty()) {
+            if (list == null || list.isEmpty()) {
                 list = findAccessibilityNodeInfosByTexts(
                         luckyMoneyListView.getChild(index),
                         new String[]{
-                                WECHAT_VIEW_OTHERS_CH,
-                                WECHAT_VIEW_SELF_CH
+                                Const.VIEW_LUCKYMONEY_OTHERS_NAME,
+                                Const.VIEW_LUCKYMONEY_SELF_NAME
                         }
                 );
             }
@@ -233,8 +217,8 @@ public class MoneyToolService extends AccessibilityService {
             List<AccessibilityNodeInfo> list = findAccessibilityNodeInfosByTexts(
                     luckyMoneyListView.getChild(index),
                     new String[]{
-                            WECHAT_VIEW_OTHERS_CH,
-                            WECHAT_VIEW_SELF_CH
+                            Const.VIEW_LUCKYMONEY_OTHERS_NAME,
+                            Const.VIEW_LUCKYMONEY_SELF_NAME
                     }
             );
 
@@ -258,10 +242,7 @@ public class MoneyToolService extends AccessibilityService {
     /** 抢红包 ,如果红包已经抢完，则关闭红包 */
     private void getLuckyMoney() {
         /* 戳开红包，红包还没抢完，遍历节点匹配“拆红包” */
-        List<AccessibilityNodeInfo> list = rootNodeInfo.findAccessibilityNodeInfosByViewId("com.tencent.mm:id/b3h");
-        if (null == list || list.isEmpty()) {
-            list = rootNodeInfo.findAccessibilityNodeInfosByText(WECHAT_VIEW_GET);
-        }
+        List<AccessibilityNodeInfo> list = rootNodeInfo.findAccessibilityNodeInfosByViewId(Const.VIEW_GET_LUCKYMONEY_ID);
 
         if (null != list && !list.isEmpty()) {
             list.get(0).performAction(AccessibilityNodeInfo.ACTION_CLICK);
@@ -273,14 +254,15 @@ public class MoneyToolService extends AccessibilityService {
         if (LUCKYMONEY_OPEN == (LUCKYMONEY_OPEN & luckyMoneyStatus)) {
             list = findAccessibilityNodeInfosByTexts(
                     rootNodeInfo,
-                    new String[]{WECHAT_BETTER_LUCK_CH,
-                            WECHAT_DETAILS_CH,
-                            WECHAT_BETTER_LUCK_EN,
-                            WECHAT_DETAILS_EN
+                    new String[]{Const.WECHAT_BETTER_LUCK_CH,
+                            Const.WECHAT_DETAILS_CH,
+                            Const.WECHAT_BETTER_LUCK_EN,
+                            Const.WECHAT_DETAILS_EN
                     }
             );
 
             if (!list.isEmpty()) {
+                // 返回
                 performGlobalAction(GLOBAL_ACTION_BACK);
                 luckyMoneyStatus = LUCKYMONEY_CLOSE;
             }
@@ -332,7 +314,7 @@ public class MoneyToolService extends AccessibilityService {
         ULog.d(rect.toString());
 
 //        return 168 == rect.right && 49 == rect.bottom;
-        return 212 == rect.right && 66 == rect.bottom;
+        return 184 == rect.right && 64 == rect.bottom;
 
     }
 

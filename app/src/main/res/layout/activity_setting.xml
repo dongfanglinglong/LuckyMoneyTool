@@ -5,9 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
-    tools:context="com.df.moneytool.Setting"
-
+    tools:context="com.df.moneytool.SettingsActivity"
     >
 
 
@@ -16,7 +14,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <include layout="@layout/activity_preferences"/>
+        <include layout="@layout/activity_preferences" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -30,7 +28,7 @@
             android:singleLine="true"
             android:text="监视选项"
             android:textColor="#d55849"
-            android:textSize="16sp"/>
+            android:textSize="16sp" />
 
 
         <RelativeLayout
@@ -40,13 +38,15 @@
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:paddingRight="@dimen/activity_horizontal_margin"
             >
+
             <CheckBox
                 android:id="@+id/checkBox_notification"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
-                android:checked="false"/>
+                android:checked="false" />
+
             <TextView
                 android:id="@+android:id/title"
                 android:layout_width="wrap_content"
@@ -56,7 +56,7 @@
                 android:singleLine="true"
                 android:text="监视系统通知"
                 android:textColor="#ff333333"
-                android:textSize="18sp"/>
+                android:textSize="18sp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -66,13 +66,13 @@
                 android:layout_toLeftOf="@+id/checkBox_notification"
                 android:text="读取微信新消息通知中的红包"
                 android:textColor="?android:attr/textColorSecondary"
-                android:textSize="16sp"/>
+                android:textSize="16sp" />
         </RelativeLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:background="@android:color/darker_gray"/>
+            android:background="@android:color/darker_gray" />
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -89,7 +89,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
-                android:checked="true"/>
+                android:checked="true" />
 
             <TextView
                 android:id="@+android:id/title"
@@ -100,7 +100,7 @@
                 android:singleLine="true"
                 android:text="监视聊天列表"
                 android:textColor="#ff333333"
-                android:textSize="18sp"/>
+                android:textSize="18sp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -110,7 +110,7 @@
                 android:layout_toLeftOf="@+id/checkBox_listview"
                 android:text="读取微信聊天列表中的红包"
                 android:textColor="?android:attr/textColorSecondary"
-                android:textSize="16sp"/>
+                android:textSize="16sp" />
 
 
         </RelativeLayout>
@@ -118,7 +118,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:background="@android:color/darker_gray"/>
+            android:background="@android:color/darker_gray" />
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -135,7 +135,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
-                android:checked="true"/>
+                android:checked="true" />
 
             <TextView
                 android:id="@+android:id/title"
@@ -146,7 +146,7 @@
                 android:singleLine="true"
                 android:text="监视当前聊天页面"
                 android:textColor="#ff333333"
-                android:textSize="18sp"/>
+                android:textSize="18sp" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -156,14 +156,14 @@
                 android:layout_toLeftOf="@+id/checkbox_open_luckyMoney"
                 android:text="读取当前聊天中的红包,拆开红包需要开启该选项"
                 android:textColor="?android:attr/textColorSecondary"
-                android:textSize="16sp"/>
+                android:textSize="16sp" />
 
         </RelativeLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:background="@android:color/darker_gray"/>
+            android:background="@android:color/darker_gray" />
 
 
         <TextView
@@ -178,7 +178,7 @@
             android:singleLine="true"
             android:text="辅助功能"
             android:textColor="#d55849"
-            android:textSize="16sp"/>
+            android:textSize="16sp" />
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -187,6 +187,7 @@
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:paddingRight="@dimen/activity_horizontal_margin"
             >
+
             <CheckBox
                 android:id="@+id/checkBox_logger"
                 android:layout_width="wrap_content"
@@ -195,7 +196,8 @@
                 android:layout_centerVertical="true"
                 android:checked="false"
                 android:clickable="false"
-                android:focusable="false"/>
+                android:focusable="false" />
+
             <TextView
                 android:id="@+android:id/title"
                 android:layout_width="wrap_content"
@@ -205,7 +207,7 @@
                 android:singleLine="true"
                 android:text="开启红包日志"
                 android:textColor="#ff333333"
-                android:textSize="18sp"/>
+                android:textSize="18sp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -215,7 +217,7 @@
                 android:layout_toLeftOf="@+id/checkBox_logger"
                 android:text="记录我抢到的红包,敬请期待"
                 android:textColor="?android:attr/textColorSecondary"
-                android:textSize="16sp"/>
+                android:textSize="16sp" />
         </RelativeLayout>
     </LinearLayout>
 
