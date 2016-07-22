@@ -1,4 +1,10 @@
+
 apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
+
+repositories {
+    maven { url 'https://maven.fabric.io/public' }
+}
 
 //apply from: '../tool.gradle'
 
@@ -55,5 +61,8 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.+'
     compile 'com.android.support:design:23.+'
     compile 'com.android.support:support-v4:23.+'
+    compile('com.crashlytics.sdk.android:crashlytics:2.6.1@aar') {
+        transitive = true;
+    }
 }
 

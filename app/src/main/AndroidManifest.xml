@@ -3,9 +3,9 @@
     package="com.df.moneytool"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
 
     <application
@@ -19,9 +19,9 @@
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
@@ -29,16 +29,21 @@
             android:label="@string/title_activity_settings"
             android:launchMode="singleTask">
         </activity>
-       <service
-           android:name=".services.MoneyToolService"
-           android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+
+        <service
+            android:name=".services.MoneyToolService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService"/>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
             <meta-data
                 android:name="android.accessibilityservice"
-                android:resource="@xml/accessible_service_config"/>
+                android:resource="@xml/accessible_service_config" />
         </service>
+
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="024948339357cf9ae3c1e885b8459e524b3fdccd" />
     </application>
 
 </manifest>
