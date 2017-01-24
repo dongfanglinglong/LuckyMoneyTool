@@ -14,11 +14,11 @@ public class Const {
     // 红包出现在listview时，判断红包出现的关键字和ID
     public static final String VIEW_LUCKYMONEY_SELF_NAME = "查看红包";
     public static final String VIEW_LUCKYMONEY_OTHERS_NAME = "领取红包";
-    public static final String VIEW_OPEN_LUCKYMONEY_ITEM_ID = "com.tencent.mm:id/a1c";
+    public static final String VIEW_OPEN_LUCKYMONEY_ITEM_ID = "com.tencent.mm:id/a5u";
 
 
     // 打开红包
-    public static final String VIEW_GET_LUCKYMONEY_ID = "com.tencent.mm:id/b_b";
+    public static final String VIEW_GET_LUCKYMONEY_ID = "com.tencent.mm:id/bi3";
 
     // 关闭红包页面
     public static final String WECHAT_DETAILS_EN = "Details";

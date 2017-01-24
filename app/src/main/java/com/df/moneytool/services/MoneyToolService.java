@@ -23,6 +23,8 @@ import java.util.List;
 public class MoneyToolService extends AccessibilityService {
 
 
+
+
     // ---------- 抢红包操作状态 --------------
     /** 通知栏收到红包 */
     private static final int LUCKYMONEY_NOTIFICATION = 0x1000; // 通知栏收到红包
