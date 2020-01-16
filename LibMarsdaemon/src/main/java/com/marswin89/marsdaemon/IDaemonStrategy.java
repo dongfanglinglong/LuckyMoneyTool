@@ -2,7 +2,8 @@ package com.marswin89.marsdaemon;
 
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import com.marswin89.marsdaemon.strategy.DaemonStrategy21;
 import com.marswin89.marsdaemon.strategy.DaemonStrategy22;

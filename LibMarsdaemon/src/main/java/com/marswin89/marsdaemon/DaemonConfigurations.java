@@ -1,8 +1,9 @@
 package com.marswin89.marsdaemon;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * the configurations of Daemon SDK, contains two process configuration.

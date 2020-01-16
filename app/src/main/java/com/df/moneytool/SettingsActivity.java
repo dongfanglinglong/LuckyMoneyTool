@@ -29,10 +29,10 @@ public class SettingsActivity extends Activity implements View.OnClickListener, 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
 
-        chkNotification = (CheckBox) findViewById(R.id.checkBox_notification);
-        chkListView = (CheckBox) findViewById(R.id.checkBox_listview);
-        chkOpen = (CheckBox) findViewById(R.id.checkbox_open_luckyMoney);
-        chkSaveLog = (CheckBox) findViewById(R.id.checkBox_logger);
+        chkNotification = findViewById(R.id.checkBox_notification);
+        chkListView = findViewById(R.id.checkBox_listview);
+        chkOpen = findViewById(R.id.checkbox_open_luckyMoney);
+        chkSaveLog = findViewById(R.id.checkBox_logger);
 
 
         chkNotification.setOnCheckedChangeListener(this);
@@ -58,9 +58,9 @@ public class SettingsActivity extends Activity implements View.OnClickListener, 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.preference_back:
-                this.finish();
-                break;
+        case R.id.preference_back:
+            this.finish();
+            break;
         }
 
     }
@@ -68,25 +68,25 @@ public class SettingsActivity extends Activity implements View.OnClickListener, 
     @Override
     public void onCheckedChanged(CompoundButton v, boolean isChecked) {
         switch (v.getId()) {
-            case R.id.checkBox_notification:
-                PreferenceUtil.setMonitorNotification(this, isChecked);
-                Gloable.MONITOR_NOTIFICATION = isChecked;
-                break;
-            case R.id.checkBox_listview:
-                PreferenceUtil.setMonitorScrolled(this, isChecked);
-                Gloable.MONITOR_SCROLLED = isChecked;
+        case R.id.checkBox_notification:
+            PreferenceUtil.setMonitorNotification(this, isChecked);
+            Gloable.MONITOR_NOTIFICATION = isChecked;
+            break;
+        case R.id.checkBox_listview:
+            PreferenceUtil.setMonitorScrolled(this, isChecked);
+            Gloable.MONITOR_SCROLLED = isChecked;
 
-                break;
-            case R.id.checkbox_open_luckyMoney:
-                PreferenceUtil.setMonitorOpenLuckymoney(this, isChecked);
-                Gloable.MONITOR_OPEN_LUCKYMONEY = isChecked;
+            break;
+        case R.id.checkbox_open_luckyMoney:
+            PreferenceUtil.setMonitorOpenLuckymoney(this, isChecked);
+            Gloable.MONITOR_OPEN_LUCKYMONEY = isChecked;
 
-                break;
-            case R.id.checkBox_logger:
-                PreferenceUtil.setMonitorSaveLogger(this, isChecked);
-                Gloable.MONITOR_SAVE_LOGGER = isChecked;
+            break;
+        case R.id.checkBox_logger:
+            PreferenceUtil.setMonitorSaveLogger(this, isChecked);
+            Gloable.MONITOR_SAVE_LOGGER = isChecked;
 
-                break;
+            break;
         }
     }
 }

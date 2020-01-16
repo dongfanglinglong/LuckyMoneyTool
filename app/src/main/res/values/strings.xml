@@ -12,6 +12,7 @@
     <string name="service_off">关闭插件</string>
     <string name="service_on">开启插件</string>
     <string name="github_url">https://github.com/dongfanglinglong/LuckyMoneyTool</string>
+    <string name="version">v %s</string>
 
     <!-- Strings related to Settings -->
 
