@@ -25,8 +25,6 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private final Intent mAccessibleIntent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-
-
     private Button startServiceBtn;
     private TextView mVersion;
 
@@ -35,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 //        Fabric.with(this, new Crashlytics());
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main_new);
         startServiceBtn = findViewById(R.id.button_accessible);
 
         mVersion = findViewById(R.id.tv_version);
@@ -115,8 +113,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void openGithub(View view) {
-        Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.github_url)));
-        startActivity(i);
+//        Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.github_url)));
+//        startActivity(i);
     }
 
     public void openSettings(View view) {

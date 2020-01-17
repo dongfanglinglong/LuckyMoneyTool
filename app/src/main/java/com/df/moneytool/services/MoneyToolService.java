@@ -23,18 +23,26 @@ import java.util.List;
 public class MoneyToolService extends AccessibilityService {
 
 
-
-
     // ---------- 抢红包操作状态 --------------
-    /** 通知栏收到红包 */
+    /**
+     * 通知栏收到红包
+     */
     private static final int LUCKYMONEY_NOTIFICATION = 0x1000; // 通知栏收到红包
-    /** listview显示红包 */
+    /**
+     * listview显示红包
+     */
     private static final int LUCKYMONEY_SHOW = 0x0100; // listview显示红包
-    /** 点开红包页面 */
+    /**
+     * 点开红包页面
+     */
     private static final int LUCKYMONEY_OPEN = 0x0010; // 点开红包页面
-    /** 抢红包 */
+    /**
+     * 抢红包
+     */
     private static final int LUCKYMONEY_GET = 0x0001; // 抢红包
-    /** 关闭红包页面 */
+    /**
+     * 关闭红包页面
+     */
     private static final int LUCKYMONEY_CLOSE = 0x0000; // 关闭红包页面
 
     // ---------- Handler --------------
@@ -44,17 +52,23 @@ public class MoneyToolService extends AccessibilityService {
     //    private static final int HANDLER_ID_REDUCE_LUCKYMONEY_NUM = 1000;
 
 
-    /** 自动抢红包状态 */
+    /**
+     * 自动抢红包状态
+     */
     private int luckyMoneyStatus = 0x0000;
 
     private AccessibilityNodeInfo rootNodeInfo;
-    /** 群对话框中的listview */
+    /**
+     * 群对话框中的listview
+     */
     private AccessibilityNodeInfo luckyMoneyListView;
 
 
     private int scolledViewItemCount = -1;
 
-    /** 红包数量 */
+    /**
+     * 红包数量
+     */
     private int luckyMoneyNum = 0;
 
 
@@ -151,7 +165,9 @@ public class MoneyToolService extends AccessibilityService {
         }
     }
 
-    /** 检测是否有红包进入列表,如果有则打开红包 */
+    /**
+     * 检测是否有红包进入列表,如果有则打开红包
+     */
     private boolean chkLuckyMoneyAndOpenOnce() {
         if (null == luckyMoneyListView) return false;
         int index = luckyMoneyListView.getChildCount() > 0 ? luckyMoneyListView.getChildCount() - 1 : 0;
@@ -164,10 +180,7 @@ public class MoneyToolService extends AccessibilityService {
             if (list == null || list.isEmpty()) {
                 list = findAccessibilityNodeInfosByTexts(
                         luckyMoneyListView.getChild(index),
-                        new String[]{
-                                Const.VIEW_LUCKYMONEY_OTHERS_NAME,
-                                Const.VIEW_LUCKYMONEY_SELF_NAME
-                        }
+                        new String[]{Const.VIEW_LUCKYMONEY_OTHERS_NAME, Const.VIEW_LUCKYMONEY_SELF_NAME}
                 );
             }
 
@@ -193,7 +206,9 @@ public class MoneyToolService extends AccessibilityService {
         return false;
     }
 
-    /** 多个红包是需要触发 */
+    /**
+     * 多个红包是需要触发
+     */
     @Deprecated
     private boolean findLuckMoneyAndOpen() {
         List<AccessibilityNodeInfo> l = rootNodeInfo.findAccessibilityNodeInfosByViewId("com.tencent.mm:id/ny");
@@ -241,7 +256,9 @@ public class MoneyToolService extends AccessibilityService {
     }
 
 
-    /** 抢红包 ,如果红包已经抢完，则关闭红包 */
+    /**
+     * 抢红包 ,如果红包已经抢完，则关闭红包
+     */
     private void getLuckyMoney() {
         /* 戳开红包，红包还没抢完，遍历节点匹配“拆红包” */
         List<AccessibilityNodeInfo> list = rootNodeInfo.findAccessibilityNodeInfosByViewId(Const.VIEW_GET_LUCKYMONEY_ID);
@@ -309,7 +326,9 @@ public class MoneyToolService extends AccessibilityService {
         return new ArrayList<>();
     }
 
-    /** 判断是否是红包，而不是聊天对话 */
+    /**
+     * 判断是否是红包，而不是聊天对话
+     */
     private boolean isLuckyMoney(AccessibilityNodeInfo info) {
         Rect rect = new Rect();
         info.getBoundsInParent(rect);

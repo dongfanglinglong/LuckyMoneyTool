@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#faf6f1"
+    tools:context=".MainActivity">
+
+
+    <ImageView
+        android:id="@+id/main_actiob_bar_placeholder"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_alignTop="@+id/textView"
+        android:layout_alignParentTop="true"
+        android:background="#d65645"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_height="50dp" />
+
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:background="@mipmap/bg_action_bar"
+        android:gravity="center_vertical|center_horizontal"
+        android:onClick="openSettings"
+        android:text="@string/app_name_chn"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="#fee1b4"
+        android:textSize="26dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_below="@+id/main_actiob_bar_placeholder"
+        android:layout_alignRight="@+id/textView"
+        android:onClick="openSettings"
+        android:padding="10dp"
+        android:src="@mipmap/ic_settings"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/main_actiob_bar_placeholder" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/tv_version"
+        android:layout_centerHorizontal="true"
+        android:clickable="true"
+        android:onClick="openGithub"
+        android:scaleType="centerInside"
+        android:src="@mipmap/open"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_version"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:clickable="true"
+        android:gravity="center"
+        android:onClick="openGithub"
+        android:paddingTop="6dp"
+        android:paddingBottom="1dp"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+        android:textColor="#c5a45e"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView"
+        tools:text="v0.0.1" />
+
+
+    <Button
+        android:id="@+id/button_accessible"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_above="@+id/github"
+        android:layout_alignParentBottom="false"
+        android:background="#24e2b379"
+        android:onClick="onButtonClicked"
+        android:text="@string/service_name"
+        android:textColor="#c5a45e"
+        android:textSize="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+    <TextView
+        android:id="@+id/github"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:clickable="true"
+        android:gravity="center_horizontal"
+        android:onClick="openGithub"
+        android:text="@string/github_url"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="#5272ae"
+        app:layout_constraintBottom_toTopOf="@+id/button_accessible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
